@@ -1,4 +1,4 @@
-import { User, ApiKey, Domain, Campaign, DashboardData, AccountQuota } from '@/types';
+import { User, ApiKey, Domain, Campaign, DashboardData, AccountQuota, SenderEmail } from '@/types';
 
 // Mock用户数据
 export const mockUser: User = {
@@ -44,30 +44,126 @@ export const mockApiKeys: ApiKey[] = [
   },
 ];
 
+// Mock发信邮箱数据
+export const mockSenderEmails: SenderEmail[] = [
+  {
+    id: '1',
+    domainId: '1',
+    emailAddress: 'service@empowershopy.com',
+    emailPrefix: 'service',
+    status: 'active',
+    createdAt: '2024-06-20T12:00:00Z',
+    lastUsed: '2024-06-24T15:30:00Z'
+  },
+  {
+    id: '2',
+    domainId: '1',
+    emailAddress: 'noreply@empowershopy.com',
+    emailPrefix: 'noreply',
+    status: 'active',
+    createdAt: '2024-06-21T09:15:00Z',
+    lastUsed: '2024-06-23T11:45:00Z'
+  },
+  {
+    id: '3',
+    domainId: '2',
+    emailAddress: 'test@testdomain.com',
+    emailPrefix: 'test',
+    status: 'pending',
+    createdAt: '2024-06-23T16:30:00Z'
+  }
+];
+
 // Mock域名数据
 export const mockDomains: Domain[] = [
   {
     id: '1',
-    domain: 'service.mycompany.com',
+    domain: 'empowershopy.com',
     status: 'verified',
     createdAt: '2024-06-20T11:00:00Z',
     verifiedAt: '2024-06-20T11:30:00Z',
     dnsRecords: {
-      spf: 'v=spf1 include:_spf.edm-gateway.com ~all',
-      dkim: 'k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC...',
-      cname: 'mail.service.mycompany.com CNAME edm-gateway.com',
+      ownership: {
+        type: 'TXT',
+        host: 'aliyundm.mail',
+        value: 'a5fda53839c757aed4ba',
+        status: 'verified',
+        description: '所有权验证记录，用于验证域名所有权'
+      },
+      spf: {
+        type: 'TXT',
+        host: 'mail',
+        value: 'v=spf1 include:spfdm-ap-southeast-1.aliyun.com -all',
+        status: 'verified',
+        description: 'SPF记录，防止域名被伪造发送邮件'
+      },
+      dkim: {
+        type: 'TXT',
+        host: 'aliyun-ap-southeast-1._domainkey.mail',
+        value: 'v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDPU8D4ekkTbp5JLCCu/oq422pKnx9f8hEWJJqiCk9Jt/6wiwNcSQ15mLt5bRmDOrBgV5z/+0ahBm1PLCbH+eIXrGanoKK22nAO/NYicTSUQocM5UAq2sfbD2zkJMTIDwEidYjTgda+Cq90HgsHvCBPss9qLocxP58Uvz3GNIhrRQIDAQAB',
+        status: 'verified',
+        description: 'DKIM记录，防止域名被伪造，提高邮件送达率'
+      },
+      dmarc: {
+        type: 'TXT',
+        host: '_dmarc.mail',
+        value: 'v=DMARC1;p=none;rua=mailto:dmarc_report@service.aliyun.com',
+        status: 'verified',
+        description: 'DMARC记录，确保邮件发送者身份真实性'
+      },
+      mx: {
+        type: 'MX',
+        host: 'mail',
+        value: 'mxdm-ap-southeast-1.aliyun.com',
+        status: 'verified',
+        description: 'MX记录，用于接收邮件'
+      }
     },
+    senderEmails: mockSenderEmails.filter(email => email.domainId === '1')
   },
   {
     id: '2',
-    domain: 'noreply.mycompany.com',
+    domain: 'testdomain.com',
     status: 'pending',
     createdAt: '2024-06-23T16:00:00Z',
     dnsRecords: {
-      spf: 'v=spf1 include:_spf.edm-gateway.com ~all',
-      dkim: 'k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQD...',
-      cname: 'mail.noreply.mycompany.com CNAME edm-gateway.com',
+      ownership: {
+        type: 'TXT',
+        host: 'aliyundm.mail',
+        value: 'b6fed64940d868bfe5cb',
+        status: 'pending',
+        description: '所有权验证记录，用于验证域名所有权'
+      },
+      spf: {
+        type: 'TXT',
+        host: 'mail',
+        value: 'v=spf1 include:spfdm-ap-southeast-1.aliyun.com -all',
+        status: 'pending',
+        description: 'SPF记录，防止域名被伪造发送邮件'
+      },
+      dkim: {
+        type: 'TXT',
+        host: 'aliyun-ap-southeast-1._domainkey.mail',
+        value: 'v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDQX9E5lmmTcp6JMDDu/pq533qLoy0g9iJXKKriDl0Ku/7xjxOdTR26nMu6cSmEPsBhW6a/+1bjCm2QMDDh+fJYsHbopLM33oBO/OZjdUTRRpdN6VBr3tgcE3zkKNUJEwFjeZkUhea+Dr91IhtIwDDPtt0rMpdyQ69Vwa4HNJisRQIDAQAB',
+        status: 'failed',
+        description: 'DKIM记录，防止域名被伪造，提高邮件送达率'
+      },
+      dmarc: {
+        type: 'TXT',
+        host: '_dmarc.mail',
+        value: 'v=DMARC1;p=none;rua=mailto:dmarc_report@service.aliyun.com',
+        status: 'pending',
+        description: 'DMARC记录，确保邮件发送者身份真实性'
+      },
+      mx: {
+        type: 'MX',
+        host: 'mail',
+        value: 'mxdm-ap-southeast-1.aliyun.com',
+        status: 'pending',
+        description: 'MX记录，用于接收邮件'
+      }
     },
+    senderEmails: mockSenderEmails.filter(email => email.domainId === '2')
   },
 ];
 
@@ -166,7 +262,7 @@ export const mockDashboardData: DashboardData = {
 export const generateApiKey = (name: string): ApiKey => {
   const keyPrefix = 'edm_live_sk_';
   const randomKey = Math.random().toString(36).substring(2, 34);
-  
+
   return {
     id: Date.now().toString(),
     name,
@@ -178,11 +274,56 @@ export const generateApiKey = (name: string): ApiKey => {
 
 // 生成新的域名记录
 export const generateDomainRecords = (domain: string) => {
-  const randomSelector = Math.random().toString(36).substring(2, 10);
-  
+  const randomOwnership = Math.random().toString(36).substring(2, 22);
+  const randomDkim = Math.random().toString(36).substring(2, 10);
+
   return {
-    spf: 'v=spf1 include:_spf.edm-gateway.com ~all',
-    dkim: `k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC${randomSelector}...`,
-    cname: `mail.${domain} CNAME edm-gateway.com`,
+    ownership: {
+      type: 'TXT' as const,
+      host: 'aliyundm.mail',
+      value: randomOwnership,
+      status: 'pending' as const,
+      description: '所有权验证记录，用于验证域名所有权'
+    },
+    spf: {
+      type: 'TXT' as const,
+      host: 'mail',
+      value: 'v=spf1 include:spfdm-ap-southeast-1.aliyun.com -all',
+      status: 'pending' as const,
+      description: 'SPF记录，防止域名被伪造发送邮件'
+    },
+    dkim: {
+      type: 'TXT' as const,
+      host: 'aliyun-ap-southeast-1._domainkey.mail',
+      value: `v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQD${randomDkim}X9E5lmmTcp6JMDDu/pq533qLoy0g9iJXKKriDl0Ku/7xjxOdTR26nMu6cSmEPsBhW6a/+1bjCm2QMDDh+fJYsHbopLM33oBO/OZjdUTRRpdN6VBr3tgcE3zkKNUJEwFjeZkUhea+Dr91IhtIwDDPtt0rMpdyQ69Vwa4HNJisRQIDAQAB`,
+      status: 'pending' as const,
+      description: 'DKIM记录，防止域名被伪造，提高邮件送达率'
+    },
+    dmarc: {
+      type: 'TXT' as const,
+      host: '_dmarc.mail',
+      value: 'v=DMARC1;p=none;rua=mailto:dmarc_report@service.aliyun.com',
+      status: 'pending' as const,
+      description: 'DMARC记录，确保邮件发送者身份真实性'
+    },
+    mx: {
+      type: 'MX' as const,
+      host: 'mail',
+      value: 'mxdm-ap-southeast-1.aliyun.com',
+      status: 'pending' as const,
+      description: 'MX记录，用于接收邮件'
+    }
+  };
+};
+
+// 生成新的发信邮箱
+export const generateSenderEmail = (domainId: string, domain: string, emailPrefix: string): SenderEmail => {
+  return {
+    id: Date.now().toString(),
+    domainId,
+    emailAddress: `${emailPrefix}@${domain}`,
+    emailPrefix,
+    status: 'active',
+    createdAt: new Date().toISOString()
   };
 };

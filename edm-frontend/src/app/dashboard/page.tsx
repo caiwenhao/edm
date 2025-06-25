@@ -20,6 +20,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { StatCard } from '@/components/ui/stat-card';
 import { EmailStatsChart, TrendChart } from '@/components/charts/EmailStatsChart';
+import { SimpleFunnelChart } from '@/components/charts/FunnelChart';
 import { Loading } from '@/components/ui/loading';
 
 // 先创建一个简单的Progress组件，因为shadcn可能没有包含
@@ -202,12 +203,23 @@ export default function DashboardPage() {
           description="过去7天的邮件发送、送达、打开、点击趋势"
         />
 
-        <EmailStatsChart
-          data={data.chartData}
-          type="pie"
-          title="数据分布"
-          description="送达、打开、点击数据的分布情况"
-        />
+        <Card>
+          <CardHeader>
+            <CardTitle>转化漏斗</CardTitle>
+            <CardDescription>邮件发送到点击的转化流程</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SimpleFunnelChart
+              data={[
+                { name: '发送', value: data.totalStats.sent, color: '#3B82F6' },
+                { name: '送达', value: data.totalStats.delivered, color: '#10B981' },
+                { name: '打开', value: data.totalStats.opened, color: '#F59E0B' },
+                { name: '点击', value: data.totalStats.clicked, color: '#EF4444' },
+              ]}
+              height={250}
+            />
+          </CardContent>
+        </Card>
       </div>
 
       {/* Recent Campaigns */}

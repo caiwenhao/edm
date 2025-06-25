@@ -28,6 +28,18 @@ export interface ApiKey {
 // 域名验证状态
 export type DomainStatus = 'pending' | 'verifying' | 'verified' | 'failed';
 
+// DNS记录验证状态
+export type DnsRecordStatus = 'pending' | 'verified' | 'failed';
+
+// DNS记录类型
+export interface DnsRecord {
+  type: 'TXT' | 'MX' | 'CNAME';
+  host: string;
+  value: string;
+  status: DnsRecordStatus;
+  description?: string;
+}
+
 // 域名类型
 export interface Domain {
   id: string;
@@ -36,10 +48,34 @@ export interface Domain {
   createdAt: string;
   verifiedAt?: string;
   dnsRecords: {
-    spf: string;
-    dkim: string;
-    cname: string;
+    // 1. 所有权验证
+    ownership: DnsRecord;
+    // 2. SPF验证
+    spf: DnsRecord;
+    // 3. DKIM验证
+    dkim: DnsRecord;
+    // 4. DMARC验证
+    dmarc: DnsRecord;
+    // 5. MX验证
+    mx: DnsRecord;
   };
+  // 关联的发信邮箱列表
+  senderEmails?: SenderEmail[];
+}
+
+// 发信邮箱状态
+export type SenderEmailStatus = 'active' | 'inactive' | 'pending';
+
+// 发信邮箱类型
+export interface SenderEmail {
+  id: string;
+  domainId: string;
+  emailAddress: string; // 完整的发信邮箱地址，如 'service@mycompany.com'
+  emailPrefix: string;   // 邮箱前缀，如 'service'
+  status: SenderEmailStatus;
+  createdAt: string;
+  lastUsed?: string;
+  // SMTP信息对用户隐藏，仅后端存储
 }
 
 // 邮件发送统计

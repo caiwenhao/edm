@@ -20,9 +20,10 @@ import { campaignsApi } from '@/lib/api';
 import { toast } from 'sonner';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { FunnelChart } from '@/components/charts/FunnelChart';
 
-const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444'];
+
 
 export default function CampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -76,18 +77,41 @@ export default function CampaignsPage() {
     clicked: campaign.stats.clicked,
   }));
 
-  const pieData = [
-    { name: '已送达', value: filteredCampaigns.reduce((sum, c) => sum + c.stats.delivered, 0) },
-    { name: '已打开', value: filteredCampaigns.reduce((sum, c) => sum + c.stats.opened, 0) },
-    { name: '已点击', value: filteredCampaigns.reduce((sum, c) => sum + c.stats.clicked, 0) },
-  ];
-
+  // 计算总体统计数据
   const totalStats = {
     sent: filteredCampaigns.reduce((sum, c) => sum + c.stats.sent, 0),
     delivered: filteredCampaigns.reduce((sum, c) => sum + c.stats.delivered, 0),
     opened: filteredCampaigns.reduce((sum, c) => sum + c.stats.opened, 0),
     clicked: filteredCampaigns.reduce((sum, c) => sum + c.stats.clicked, 0),
   };
+
+  // 漏斗图数据 - 按照邮件营销的转化流程
+  const funnelData = [
+    {
+      name: '发送',
+      value: totalStats.sent,
+      color: '#3B82F6',
+      icon: <Mail className="h-5 w-5" />
+    },
+    {
+      name: '送达',
+      value: totalStats.delivered,
+      color: '#10B981',
+      icon: <CheckCircle className="h-5 w-5" />
+    },
+    {
+      name: '打开',
+      value: totalStats.opened,
+      color: '#F59E0B',
+      icon: <Eye className="h-5 w-5" />
+    },
+    {
+      name: '点击',
+      value: totalStats.clicked,
+      color: '#EF4444',
+      icon: <MousePointer className="h-5 w-5" />
+    },
+  ];
 
   if (isLoading) {
     return (
@@ -215,7 +239,7 @@ export default function CampaignsPage() {
           </div>
 
           {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>活动数据对比</CardTitle>
@@ -239,29 +263,13 @@ export default function CampaignsPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>总体数据分布</CardTitle>
-                <CardDescription>送达、打开、点击数据的分布情况</CardDescription>
+                <CardTitle>邮件转化漏斗</CardTitle>
+                <CardDescription>从发送到点击的完整转化流程</CardDescription>
               </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+              <CardContent className="p-3 sm:p-4">
+                <div className="h-72 sm:h-80">
+                  <FunnelChart data={funnelData} height={320} />
+                </div>
               </CardContent>
             </Card>
           </div>

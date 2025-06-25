@@ -30,7 +30,7 @@ const navigation = [
     icon: Key,
   },
   {
-    name: '域名管理',
+    name: '发信身份管理',
     href: '/domains',
     icon: Globe,
   },

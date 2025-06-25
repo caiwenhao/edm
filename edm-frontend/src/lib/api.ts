@@ -5,15 +5,18 @@ import {
   Domain,
   Campaign,
   SendEmailRequest,
-  BatchSendEmailRequest
+  BatchSendEmailRequest,
+  SenderEmail
 } from '@/types';
 import {
   mockDashboardData,
   mockApiKeys,
   mockDomains,
   mockCampaigns,
+  mockSenderEmails,
   generateApiKey,
-  generateDomainRecords
+  generateDomainRecords,
+  generateSenderEmail
 } from '@/data/mockData';
 
 // 模拟API延迟
@@ -76,7 +79,15 @@ export const domainsApi = {
   getDomains: async (): Promise<ApiResponse<Domain[]>> => {
     await delay(600);
     const domains = JSON.parse(localStorage.getItem('edm_domains') || JSON.stringify(mockDomains));
-    return mockApiResponse(domains);
+    const senderEmails = JSON.parse(localStorage.getItem('edm_sender_emails') || JSON.stringify(mockSenderEmails));
+
+    // 为每个域名关联其发信邮箱
+    const domainsWithEmails = domains.map((domain: Domain) => ({
+      ...domain,
+      senderEmails: senderEmails.filter((email: SenderEmail) => email.domainId === domain.id)
+    }));
+
+    return mockApiResponse(domainsWithEmails);
   },
 
   addDomain: async (domainName: string): Promise<ApiResponse<Domain>> => {
@@ -117,6 +128,53 @@ export const domainsApi = {
     const existingDomains = JSON.parse(localStorage.getItem('edm_domains') || JSON.stringify(mockDomains));
     const updatedDomains = existingDomains.filter((domain: Domain) => domain.id !== domainId);
     localStorage.setItem('edm_domains', JSON.stringify(updatedDomains));
+
+    // 同时删除该域名下的所有发信邮箱
+    const existingSenderEmails = JSON.parse(localStorage.getItem('edm_sender_emails') || JSON.stringify(mockSenderEmails));
+    const updatedSenderEmails = existingSenderEmails.filter((email: SenderEmail) => email.domainId !== domainId);
+    localStorage.setItem('edm_sender_emails', JSON.stringify(updatedSenderEmails));
+
+    return mockApiResponse(true);
+  },
+
+  // 发信邮箱管理
+  addSenderEmail: async (domainId: string, emailPrefix: string): Promise<ApiResponse<SenderEmail>> => {
+    await delay(1500); // 模拟调用阿里云API的时间
+
+    const existingDomains = JSON.parse(localStorage.getItem('edm_domains') || JSON.stringify(mockDomains));
+    const domain = existingDomains.find((d: Domain) => d.id === domainId);
+
+    if (!domain) {
+      return mockApiResponse(null, false);
+    }
+
+    if (domain.status !== 'verified') {
+      return mockApiResponse(null, false);
+    }
+
+    const newSenderEmail = generateSenderEmail(domainId, domain.domain, emailPrefix);
+    const existingSenderEmails = JSON.parse(localStorage.getItem('edm_sender_emails') || JSON.stringify(mockSenderEmails));
+
+    // 检查是否已存在相同的发信邮箱
+    const emailExists = existingSenderEmails.some((email: SenderEmail) =>
+      email.emailAddress === newSenderEmail.emailAddress
+    );
+
+    if (emailExists) {
+      return mockApiResponse(null, false);
+    }
+
+    const updatedSenderEmails = [...existingSenderEmails, newSenderEmail];
+    localStorage.setItem('edm_sender_emails', JSON.stringify(updatedSenderEmails));
+
+    return mockApiResponse(newSenderEmail);
+  },
+
+  deleteSenderEmail: async (emailId: string): Promise<ApiResponse<boolean>> => {
+    await delay(500);
+    const existingSenderEmails = JSON.parse(localStorage.getItem('edm_sender_emails') || JSON.stringify(mockSenderEmails));
+    const updatedSenderEmails = existingSenderEmails.filter((email: SenderEmail) => email.id !== emailId);
+    localStorage.setItem('edm_sender_emails', JSON.stringify(updatedSenderEmails));
     return mockApiResponse(true);
   },
 };
