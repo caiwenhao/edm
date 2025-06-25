@@ -154,3 +154,6 @@ temp/
 
 # Project specific
 plan.md
+
+# Local Netlify folder
+.netlify
