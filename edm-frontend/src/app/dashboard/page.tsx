@@ -208,7 +208,7 @@ export default function DashboardPage() {
             <CardTitle>转化漏斗</CardTitle>
             <CardDescription>邮件发送到点击的转化流程</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4">
             <SimpleFunnelChart
               data={[
                 { name: '发送', value: data.totalStats.sent, color: '#3B82F6' },
@@ -216,7 +216,7 @@ export default function DashboardPage() {
                 { name: '打开', value: data.totalStats.opened, color: '#F59E0B' },
                 { name: '点击', value: data.totalStats.clicked, color: '#EF4444' },
               ]}
-              height={250}
+              height={280}
             />
           </CardContent>
         </Card>

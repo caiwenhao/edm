@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import {
   BarChart3,
   Search,
@@ -13,7 +15,8 @@ import {
   MousePointer,
   Calendar,
   TrendingUp,
-  Download
+  Download,
+  Settings
 } from 'lucide-react';
 import { Campaign } from '@/types';
 import { campaignsApi } from '@/lib/api';
@@ -21,7 +24,7 @@ import { toast } from 'sonner';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { FunnelChart } from '@/components/charts/FunnelChart';
+import { EnhancedFunnelChart } from '@/components/charts/FunnelChart';
 
 
 
@@ -66,6 +69,14 @@ export default function CampaignsPage() {
   const handleExportData = () => {
     // 模拟导出功能
     toast.success('数据导出功能开发中...');
+  };
+
+  const getCreationTypeLabel = (creationType: string) => {
+    return creationType === 'manual' ? '手动创建' : 'API自动发现';
+  };
+
+  const getCreationTypeBadgeVariant = (creationType: string) => {
+    return creationType === 'manual' ? 'default' : 'secondary';
   };
 
   // 准备图表数据
@@ -147,10 +158,18 @@ export default function CampaignsPage() {
               <h1 className="text-2xl font-bold text-gray-900">活动报告</h1>
               <p className="text-gray-600">查看您的邮件活动详细数据和分析</p>
             </div>
-            <Button onClick={handleExportData} variant="outline">
-              <Download className="mr-2 h-4 w-4" />
-              导出数据
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Link href="/campaigns/manage">
+                <Button variant="outline">
+                  <Settings className="mr-2 h-4 w-4" />
+                  活动管理
+                </Button>
+              </Link>
+              <Button onClick={handleExportData} variant="outline">
+                <Download className="mr-2 h-4 w-4" />
+                导出数据
+              </Button>
+            </div>
           </div>
 
           {/* Search */}
@@ -267,8 +286,8 @@ export default function CampaignsPage() {
                 <CardDescription>从发送到点击的完整转化流程</CardDescription>
               </CardHeader>
               <CardContent className="p-3 sm:p-4">
-                <div className="h-72 sm:h-80">
-                  <FunnelChart data={funnelData} height={320} />
+                <div className="h-80 sm:h-96">
+                  <EnhancedFunnelChart data={funnelData} height={380} />
                 </div>
               </CardContent>
             </Card>
@@ -299,7 +318,12 @@ export default function CampaignsPage() {
                     <div key={campaign.id} className="border rounded-lg p-6">
                       <div className="flex items-center justify-between mb-4">
                         <div>
-                          <h3 className="text-lg font-medium text-gray-900">{campaign.name}</h3>
+                          <div className="flex items-center space-x-2 mb-1">
+                            <h3 className="text-lg font-medium text-gray-900">{campaign.name}</h3>
+                            <Badge variant={getCreationTypeBadgeVariant(campaign.creationType)}>
+                              {getCreationTypeLabel(campaign.creationType)}
+                            </Badge>
+                          </div>
                           <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
                             <div className="flex items-center">
                               <Calendar className="h-4 w-4 mr-1" />

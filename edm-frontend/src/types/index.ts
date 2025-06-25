@@ -89,6 +89,9 @@ export interface EmailStats {
   clickRate: number;
 }
 
+// 活动创建方式
+export type CampaignCreationType = 'manual' | 'api_auto';
+
 // 活动类型
 export interface Campaign {
   id: string;
@@ -96,6 +99,8 @@ export interface Campaign {
   createdAt: string;
   stats: EmailStats;
   lastActivity?: string;
+  creationType: CampaignCreationType;
+  isDeleted?: boolean;
 }
 
 // 仪表盘数据类型
@@ -149,4 +154,14 @@ export interface SendEmailRequest {
 export interface BatchSendEmailRequest {
   emails: SendEmailRequest[];
   campaign_id?: string;
+}
+
+// 活动创建请求类型
+export interface CreateCampaignRequest {
+  name: string;
+}
+
+// 活动更新请求类型
+export interface UpdateCampaignRequest {
+  name: string;
 }

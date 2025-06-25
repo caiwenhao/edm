@@ -6,7 +6,9 @@ import {
   Campaign,
   SendEmailRequest,
   BatchSendEmailRequest,
-  SenderEmail
+  SenderEmail,
+  CreateCampaignRequest,
+  UpdateCampaignRequest
 } from '@/types';
 import {
   mockDashboardData,
@@ -16,7 +18,8 @@ import {
   mockSenderEmails,
   generateApiKey,
   generateDomainRecords,
-  generateSenderEmail
+  generateSenderEmail,
+  generateCampaign
 } from '@/data/mockData';
 
 // 模拟API延迟
@@ -183,13 +186,73 @@ export const domainsApi = {
 export const campaignsApi = {
   getCampaigns: async (): Promise<ApiResponse<Campaign[]>> => {
     await delay(700);
-    return mockApiResponse(mockCampaigns);
+    // 初始化localStorage中的活动数据（如果不存在）
+    if (!localStorage.getItem('edm_campaigns')) {
+      localStorage.setItem('edm_campaigns', JSON.stringify(mockCampaigns));
+    }
+    const campaigns = JSON.parse(localStorage.getItem('edm_campaigns') || JSON.stringify(mockCampaigns));
+    // 过滤掉已删除的活动
+    const activeCampaigns = campaigns.filter((c: Campaign) => !c.isDeleted);
+    return mockApiResponse(activeCampaigns);
   },
 
   getCampaign: async (campaignId: string): Promise<ApiResponse<Campaign | null>> => {
     await delay(400);
-    const campaign = mockCampaigns.find(c => c.id === campaignId);
+    const campaigns = JSON.parse(localStorage.getItem('edm_campaigns') || JSON.stringify(mockCampaigns));
+    const campaign = campaigns.find((c: Campaign) => c.id === campaignId && !c.isDeleted);
     return mockApiResponse(campaign || null);
+  },
+
+  createCampaign: async (request: CreateCampaignRequest): Promise<ApiResponse<Campaign>> => {
+    await delay(800);
+    const newCampaign = generateCampaign(request.name);
+    const existingCampaigns = JSON.parse(localStorage.getItem('edm_campaigns') || JSON.stringify(mockCampaigns));
+    const updatedCampaigns = [...existingCampaigns, newCampaign];
+    localStorage.setItem('edm_campaigns', JSON.stringify(updatedCampaigns));
+    return mockApiResponse(newCampaign);
+  },
+
+  updateCampaign: async (campaignId: string, request: UpdateCampaignRequest): Promise<ApiResponse<Campaign>> => {
+    await delay(600);
+    const existingCampaigns = JSON.parse(localStorage.getItem('edm_campaigns') || JSON.stringify(mockCampaigns));
+    const campaignIndex = existingCampaigns.findIndex((c: Campaign) => c.id === campaignId && !c.isDeleted);
+
+    if (campaignIndex === -1) {
+      return mockApiResponse(null as any, false);
+    }
+
+    // 只允许更新手动创建的活动
+    if (existingCampaigns[campaignIndex].creationType !== 'manual') {
+      return mockApiResponse(null as any, false);
+    }
+
+    existingCampaigns[campaignIndex] = {
+      ...existingCampaigns[campaignIndex],
+      name: request.name,
+    };
+
+    localStorage.setItem('edm_campaigns', JSON.stringify(existingCampaigns));
+    return mockApiResponse(existingCampaigns[campaignIndex]);
+  },
+
+  deleteCampaign: async (campaignId: string): Promise<ApiResponse<boolean>> => {
+    await delay(500);
+    const existingCampaigns = JSON.parse(localStorage.getItem('edm_campaigns') || JSON.stringify(mockCampaigns));
+    const campaignIndex = existingCampaigns.findIndex((c: Campaign) => c.id === campaignId && !c.isDeleted);
+
+    if (campaignIndex === -1) {
+      return mockApiResponse(false, false);
+    }
+
+    // 只允许删除手动创建的活动
+    if (existingCampaigns[campaignIndex].creationType !== 'manual') {
+      return mockApiResponse(false, false);
+    }
+
+    // 软删除：标记为已删除而不是真正删除
+    existingCampaigns[campaignIndex].isDeleted = true;
+    localStorage.setItem('edm_campaigns', JSON.stringify(existingCampaigns));
+    return mockApiResponse(true);
   },
 };
 

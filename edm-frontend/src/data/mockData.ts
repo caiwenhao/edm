@@ -1,4 +1,4 @@
-import { User, ApiKey, Domain, Campaign, DashboardData, AccountQuota, SenderEmail } from '@/types';
+import { User, ApiKey, Domain, Campaign, DashboardData, AccountQuota, SenderEmail, CreateCampaignRequest } from '@/types';
 
 // Mock用户数据
 export const mockUser: User = {
@@ -174,6 +174,7 @@ export const mockCampaigns: Campaign[] = [
     name: 'Q3促销活动',
     createdAt: '2024-06-20T12:00:00Z',
     lastActivity: '2024-06-24T18:30:00Z',
+    creationType: 'manual',
     stats: {
       sent: 1250,
       delivered: 1198,
@@ -189,6 +190,7 @@ export const mockCampaigns: Campaign[] = [
     name: '新用户欢迎系列',
     createdAt: '2024-06-21T09:00:00Z',
     lastActivity: '2024-06-24T14:15:00Z',
+    creationType: 'manual',
     stats: {
       sent: 890,
       delivered: 867,
@@ -204,6 +206,7 @@ export const mockCampaigns: Campaign[] = [
     name: '产品更新通知',
     createdAt: '2024-06-22T15:30:00Z',
     lastActivity: '2024-06-23T10:20:00Z',
+    creationType: 'api_auto',
     stats: {
       sent: 2100,
       delivered: 2058,
@@ -219,6 +222,7 @@ export const mockCampaigns: Campaign[] = [
     name: '测试发送',
     createdAt: '2024-06-24T10:00:00Z',
     lastActivity: '2024-06-24T10:05:00Z',
+    creationType: 'api_auto',
     stats: {
       sent: 5,
       delivered: 5,
@@ -325,5 +329,27 @@ export const generateSenderEmail = (domainId: string, domain: string, emailPrefi
     emailPrefix,
     status: 'active',
     createdAt: new Date().toISOString()
+  };
+};
+
+// 生成新的活动
+export const generateCampaign = (name: string): Campaign => {
+  const timestamp = Date.now();
+  const randomSuffix = Math.random().toString(36).substring(2, 8);
+
+  return {
+    id: `campaign_${timestamp}_${randomSuffix}`,
+    name,
+    createdAt: new Date().toISOString(),
+    creationType: 'manual',
+    stats: {
+      sent: 0,
+      delivered: 0,
+      opened: 0,
+      clicked: 0,
+      deliveryRate: 0,
+      openRate: 0,
+      clickRate: 0,
+    },
   };
 };
