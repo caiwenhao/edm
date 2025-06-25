@@ -1,16 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
-import { 
-  User, 
-  Bell, 
-  Shield, 
+import {
+  User,
+  Bell,
+  Shield,
   CreditCard,
   Save,
   Eye,
@@ -23,9 +24,11 @@ import { toast } from 'sonner';
 
 export default function SettingsPage() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
-  
+  const [activeTab, setActiveTab] = useState('profile');
+
   // 个人信息状态
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
@@ -49,6 +52,14 @@ export default function SettingsPage() {
     newPassword: '',
     confirmPassword: '',
   });
+
+  // 根据URL参数设置活动标签页
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['profile', 'notifications', 'security', 'billing'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   const handleProfileSave = () => {
     // 模拟保存个人信息
@@ -88,7 +99,7 @@ export default function SettingsPage() {
             <p className="text-gray-600">管理您的账户信息和偏好设置</p>
           </div>
 
-          <Tabs defaultValue="profile" className="space-y-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="profile" className="flex items-center space-x-2">
                 <User className="h-4 w-4" />
@@ -181,12 +192,12 @@ export default function SettingsPage() {
                       </div>
                       <Switch
                         checked={notificationSettings.emailNotifications}
-                        onCheckedChange={(checked) => 
+                        onCheckedChange={(checked) =>
                           setNotificationSettings(prev => ({ ...prev, emailNotifications: checked }))
                         }
                       />
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
                         <Label>额度提醒</Label>
@@ -194,12 +205,12 @@ export default function SettingsPage() {
                       </div>
                       <Switch
                         checked={notificationSettings.quotaAlerts}
-                        onCheckedChange={(checked) => 
+                        onCheckedChange={(checked) =>
                           setNotificationSettings(prev => ({ ...prev, quotaAlerts: checked }))
                         }
                       />
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
                         <Label>活动报告</Label>
@@ -207,12 +218,12 @@ export default function SettingsPage() {
                       </div>
                       <Switch
                         checked={notificationSettings.campaignReports}
-                        onCheckedChange={(checked) => 
+                        onCheckedChange={(checked) =>
                           setNotificationSettings(prev => ({ ...prev, campaignReports: checked }))
                         }
                       />
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
                         <Label>安全警报</Label>
@@ -220,12 +231,12 @@ export default function SettingsPage() {
                       </div>
                       <Switch
                         checked={notificationSettings.securityAlerts}
-                        onCheckedChange={(checked) => 
+                        onCheckedChange={(checked) =>
                           setNotificationSettings(prev => ({ ...prev, securityAlerts: checked }))
                         }
                       />
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
                         <Label>周报摘要</Label>
@@ -233,13 +244,13 @@ export default function SettingsPage() {
                       </div>
                       <Switch
                         checked={notificationSettings.weeklyDigest}
-                        onCheckedChange={(checked) => 
+                        onCheckedChange={(checked) =>
                           setNotificationSettings(prev => ({ ...prev, weeklyDigest: checked }))
                         }
                       />
                     </div>
                   </div>
-                  
+
                   <div className="flex justify-end">
                     <Button onClick={handleNotificationSave}>
                       <Save className="mr-2 h-4 w-4" />
@@ -280,7 +291,7 @@ export default function SettingsPage() {
                         </button>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="newPassword">新密码</Label>
                       <div className="relative">
@@ -300,7 +311,7 @@ export default function SettingsPage() {
                         </button>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="confirmPassword">确认新密码</Label>
                       <Input
@@ -311,9 +322,9 @@ export default function SettingsPage() {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="flex justify-end">
-                    <Button 
+                    <Button
                       onClick={handlePasswordChange}
                       disabled={!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
                     >
@@ -344,7 +355,7 @@ export default function SettingsPage() {
                         <p className="text-sm text-green-600 mt-2">免费</p>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label>使用情况</Label>
                       <div className="p-4 border rounded-lg">
@@ -356,7 +367,7 @@ export default function SettingsPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <h4 className="font-medium text-blue-900 mb-2">升级到专业版</h4>
                     <p className="text-sm text-blue-800 mb-3">

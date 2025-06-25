@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { User, Search } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +24,7 @@ interface HeaderProps {
 
 export function Header({ user, onLogout }: HeaderProps) {
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+  const router = useRouter();
 
   const handleMarkAsRead = (id: string) => {
     setNotifications(prev =>
@@ -41,19 +42,20 @@ export function Header({ user, onLogout }: HeaderProps) {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  return (
-    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
-      {/* Search */}
-      <div className="flex items-center space-x-4 flex-1 max-w-md">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="搜索活动、域名..."
-            className="pl-10 w-80"
-          />
-        </div>
-      </div>
+  const handleProfileClick = () => {
+    router.push('/settings?tab=profile');
+  };
 
+  const handleAccountSettingsClick = () => {
+    router.push('/settings');
+  };
+
+  const handleBillingClick = () => {
+    router.push('/settings?tab=billing');
+  };
+
+  return (
+    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-end px-6">
       {/* Right section */}
       <div className="flex items-center space-x-4">
         {/* Notifications */}
@@ -82,14 +84,14 @@ export function Header({ user, onLogout }: HeaderProps) {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>我的账户</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleProfileClick}>
               <User className="mr-2 h-4 w-4" />
               个人资料
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleAccountSettingsClick}>
               账户设置
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleBillingClick}>
               计费信息
             </DropdownMenuItem>
             <DropdownMenuSeparator />
