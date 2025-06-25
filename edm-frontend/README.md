@@ -127,7 +127,49 @@ npm run dev
 npm run build
 ```
 
-### 启动生产服务器
+项目已配置为静态导出，构建后会在 `out` 目录生成静态文件。
+
+### 部署到 Netlify
+
+#### 方法一：使用部署脚本（推荐）
+```bash
+# 安装 Netlify CLI
+npm install -g netlify-cli
+
+# 登录 Netlify
+netlify login
+
+# 运行部署脚本
+./deploy.sh
+```
+
+#### 方法二：手动部署
+```bash
+# 构建项目
+npm run build
+
+# 部署到 Netlify
+netlify deploy --prod --dir=out
+```
+
+#### 方法三：Git 集成
+1. 将代码推送到 Git 仓库（GitHub、GitLab 或 Bitbucket）
+2. 在 Netlify 控制台中连接仓库
+3. 配置构建设置：
+   - **Build command**: `npm run build`
+   - **Publish directory**: `out`
+   - **Base directory**: `edm-frontend`（如果在子目录中）
+
+### 部署配置
+
+项目包含以下部署配置文件：
+- `netlify.toml`: Netlify 部署配置
+- `next.config.ts`: Next.js 静态导出配置
+- `deploy.sh`: 自动化部署脚本
+
+详细部署说明请参考 [DEPLOYMENT.md](./DEPLOYMENT.md)
+
+### 启动生产服务器（本地测试）
 ```bash
 npm start
 ```

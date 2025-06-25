@@ -148,11 +148,11 @@ export const domainsApi = {
     const domain = existingDomains.find((d: Domain) => d.id === domainId);
 
     if (!domain) {
-      return mockApiResponse(null, false);
+      return mockApiResponse(null as any, false);
     }
 
     if (domain.status !== 'verified') {
-      return mockApiResponse(null, false);
+      return mockApiResponse(null as any, false);
     }
 
     const newSenderEmail = generateSenderEmail(domainId, domain.domain, emailPrefix);
@@ -164,7 +164,7 @@ export const domainsApi = {
     );
 
     if (emailExists) {
-      return mockApiResponse(null, false);
+      return mockApiResponse(null as any, false);
     }
 
     const updatedSenderEmails = [...existingSenderEmails, newSenderEmail];
